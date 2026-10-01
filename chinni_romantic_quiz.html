@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Little Story ❤️</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;overflow:hidden;font-family:Georgia,serif;color:#fff;background:radial-gradient(circle at top,#641a42,#260c29 48%,#090611)}
+#hearts{position:fixed;inset:0;pointer-events:none;overflow:hidden}.heart{position:absolute;bottom:-40px;animation:float 7s linear forwards}
+@keyframes float{0%{transform:translateY(0) rotate(0);opacity:0}15%{opacity:.9}100%{transform:translateY(-110vh) rotate(360deg);opacity:0}}
+.screen{display:none;min-height:100vh;align-items:center;justify-content:center;padding:20px}.active{display:flex}
+.card{width:min(680px,94vw);padding:32px 24px;text-align:center;border:1px solid #ffffff33;border-radius:28px;background:#ffffff12;backdrop-filter:blur(14px);box-shadow:0 20px 70px #0008;animation:in .7s ease}
+@keyframes in{from{opacity:0;transform:translateY(25px) scale(.96)}to{opacity:1;transform:none}}
+h1{font-size:clamp(35px,8vw,62px);margin:8px 0 14px}h2{font-size:clamp(25px,6vw,40px)}p{font-size:18px;line-height:1.6;color:#ffe8f3}
+button{border:0;border-radius:999px;padding:14px 24px;margin:8px;font-size:16px;font-weight:bold;cursor:pointer;color:#3b0b28;background:linear-gradient(135deg,#fff,#ffd0e4);transition:.2s}
+button:hover{transform:translateY(-3px) scale(1.03)}.music{position:fixed;right:12px;top:12px;z-index:5;padding:10px 14px;font-size:13px}
+.progress{height:7px;background:#ffffff25;border-radius:10px;overflow:hidden;margin:8px 0 24px}.bar{height:100%;background:linear-gradient(90deg,#ff79b0,#fff);transition:.4s}
+.options{display:grid;gap:12px}.option{width:100%;margin:0;background:#ffffff15;color:#fff;border:1px solid #ffffff2b}.correct{background:#25b889!important}.wrong{background:#e75b78!important}
+.big-heart{font-size:70px;animation:pulse 1.2s infinite}@keyframes pulse{50%{transform:scale(1.14)}}#score{font-size:64px;font-weight:bold;color:#ffd3e5}
+#surpriseText{font-size:clamp(20px,4vw,28px);min-height:145px;line-height:1.5}.signature{color:#ffd0e4}
+</style>
+</head>
+<body>
+<div id="hearts"></div>
+<button class="music" id="musicBtn" onclick="toggleMusic()">🎵 Music: OFF</button>
+
+<section class="screen active" id="intro"><div class="card">
+<div class="big-heart">❤️</div><h1>Hey Princess...</h1>
+<p><i>I made a little quiz about our story.</i></p>
+<p>Let's see how well you remember <b>us</b>. ✨</p>
+<button onclick="startQuiz()">Start Our Story 💕</button>
+</div></section>
+
+<section class="screen" id="quiz"><div class="card">
+<div class="progress"><div class="bar" id="bar"></div></div>
+<p id="count">Question 1 of 5</p><h2 id="question"></h2><div class="options" id="options"></div>
+</div></section>
+
+<section class="screen" id="result"><div class="card">
+<div class="big-heart">💖</div><h1>Our Story Score</h1><div id="score">0 / 5</div>
+<p id="resultMsg"></p><button onclick="showSurprise()">Open Your Surprise 💌</button>
+</div></section>
+
+<section class="screen" id="surprise"><div class="card">
+<div class="big-heart">💗</div><h1>For My Princess</h1><div id="surpriseText"></div>
+<p class="signature">— Pabo ❤️</p><button onclick="restart()">Replay Our Story ↻</button>
+</div></section>
+
+<script>
+const questions=[
+{q:"On which date we met, Princess?",a:["July 27, 2023","July 27, 2024","March 27, 2023","July 25, 2023"],c:0},
+{q:"Where did we meet?",a:["Instagram","WhatsApp","Snapchat","Facebook"],c:1},
+{q:"On which day did I propose to you again, Chinnii?",a:["27 March 2026","25 March 2026","30 March 2026","25 July 2026"],c:1},
+{q:"Do I lobb uh? If yes, how much?",a:["A little","A lot","Infinity ♾️","More than infinity"],c:2},
+{q:"Will uh share your last bite of ur icecream?",a:["No chance 😌","Maybe","Yes, I will Pabo ❤️","Only one spoon"],c:2}
+];
+let current=0,score=0,locked=false,timer,audioCtx,master;
+
+function show(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active")}
+function startQuiz(){current=0;score=0;show("quiz");render()}
+function render(){
+ locked=false;let x=questions[current];
+ document.getElementById("count").textContent=`Question ${current+1} of 5`;
+ document.getElementById("question").textContent=x.q;
+ document.getElementById("bar").style.width=((current+1)/5*100)+"%";
+ let box=document.getElementById("options");box.innerHTML="";
+ x.a.forEach((v,i)=>{let b=document.createElement("button");b.className="option";b.textContent=v;b.onclick=()=>answer(i,b);box.appendChild(b)})
+}
+function answer(i,b){
+ if(locked)return;locked=true;let x=questions[current];
+ document.querySelectorAll(".option").forEach((z,n)=>{z.disabled=true;if(n===x.c)z.classList.add("correct")});
+ if(i===x.c){score++;b.classList.add("correct");burst(6)}else b.classList.add("wrong");
+ setTimeout(()=>{current++;current<5?render():finish()},850)
+}
+function finish(){
+ show("result");document.getElementById("score").textContent=`${score} / 5`;
+ document.getElementById("resultMsg").textContent=score===5?"You remembered every little piece of us. 🥹❤️":score>=3?"Not bad, Princess... our story still has a special place in your heart. 💕":"Looks like we need another little story session. 😄❤️";
+ burst(18)
+}
+function showSurprise(){
+ show("surprise");let text="From the day we met to every little moment after that, our story became something I never want to forget. You are not just a memory in my story—you are one of my favourite chapters. And if I had to choose again, I would still choose you. ❤️";
+ let el=document.getElementById("surpriseText");el.textContent="";let i=0;clearInterval(timer);
+ timer=setInterval(()=>{if(i<text.length)el.textContent+=text[i++];else clearInterval(timer)},28);burst(25)
+}
+function restart(){show("intro")}
+function burst(n=5){for(let i=0;i<n;i++){let h=document.createElement("div");h.className="heart";h.textContent=["❤️","💖","💕","💗","✨"][Math.floor(Math.random()*5)];h.style.left=Math.random()*100+"%";h.style.fontSize=(14+Math.random()*24)+"px";h.style.animationDuration=(4+Math.random()*4)+"s";document.getElementById("hearts").appendChild(h);setTimeout(()=>h.remove(),8000)}}
+setInterval(()=>burst(1),1100);
+
+function toggleMusic(){
+ if(!audioCtx){
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();master=audioCtx.createGain();master.gain.value=.045;master.connect(audioCtx.destination);playMelody()
+ }
+ if(audioCtx.state==="running"){audioCtx.suspend();musicBtn.textContent="🎵 Music: OFF"}else{audioCtx.resume();musicBtn.textContent="🎵 Music: ON"}
+}
+function playMelody(){
+ const notes=[261.63,329.63,392,329.63,293.66,349.23,440,349.23];let k=0;
+ setInterval(()=>{if(!audioCtx||audioCtx.state!=="running")return;
+ let o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type="sine";o.frequency.value=notes[k++%notes.length];
+ g.gain.setValueAtTime(.0001,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.07,audioCtx.currentTime+.08);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.65);
+ o.connect(g);g.connect(master);o.start();o.stop(audioCtx.currentTime+.7)},700)
+}
+</script>
+</body>
+</html>
